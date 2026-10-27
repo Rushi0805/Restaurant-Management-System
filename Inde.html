@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Masala Ledger – Order Management</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Hanken+Grotesk:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ink: #17120f;
+            --card: #231b16;
+            --line: #3a2e26;
+            --turmeric: #f0b429;
+            --chili: #e0532f;
+            --leaf: #78b08f;
+            --paper: #f3e9d2;
+            --mut: #b4a593;
+            --txt: #f6efe3
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--ink);
+            color: var(--txt);
+            font: 15px/1.5 'Hanken Grotesk', system-ui, sans-serif;
+            background-image: radial-gradient(circle at 85% -10%, #4a2a14 0, transparent 40%)
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            margin: 0;
+            letter-spacing: -.02em
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: end;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 28px 5vw 0
+        }
+
+        header h1 {
+            font-size: clamp(34px, 6vw, 64px);
+            font-weight: 800;
+            line-height: .95
+        }
+
+        header h1 span {
+            color: var(--turmeric)
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: var(--mut)
+        }
+
+        nav {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 20px 5vw;
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            background: var(--ink);
+            z-index: 5
+        }
+
+        nav button {
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--mut);
+            padding: 9px 18px;
+            border-radius: 99px;
+            cursor: pointer;
+            font: 600 14px inherit;
+            transition: .15s
+        }
+
+        nav button:hover {
+            color: var(--txt)
+        }
+
+        nav button.on {
+            background: var(--turmeric);
+            color: #241a05;
+            border-color: var(--turmeric)
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--turmeric);
+            outline-offset: 2px
+        }
+
+        main {
+            padding: 28px 5vw 60px
+        }
+
+        section {
+            display: none
+        }
+
+        section.on {
+            display: block
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px
+        }
+
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 18px
+        }
+
+        .stat b {
+            display: block;
+            font: 800 34px 'Bricolage Grotesque';
+            color: var(--turmeric)
+        }
+
+        .stat small {
+            color: var(--mut)
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 20px
+        }
+
+        .panel h3 {
+            margin-bottom: 14px;
+            font-size: 20px
+        }
+
+        .rail {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding: 4px 2px 14px
+        }
+
+        .ticket {
+            flex: 0 0 190px;
+            background: var(--paper);
+            color: #2a2018;
+            padding: 14px 14px 18px;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), 92% 100%, 84% calc(100% - 10px), 76% 100%, 68% calc(100% - 10px), 60% 100%, 52% calc(100% - 10px), 44% 100%, 36% calc(100% - 10px), 28% 100%, 20% calc(100% - 10px), 12% 100%, 4% calc(100% - 10px), 0 100%);
+            font: 13px 'Courier New', monospace
+        }
+
+        .ticket b {
+            font: 800 18px 'Bricolage Grotesque'
+        }
+
+        .ticket hr {
+            border: 0;
+            border-top: 1px dashed #8a7a62;
+            margin: 8px 0
+        }
+
+        .ticket .tag {
+            float: right;
+            font-size: 11px;
+            padding: 1px 7px;
+            border-radius: 99px;
+            background: #2a2018;
+            color: var(--paper)
+        }
+
+        .bar {
+            display: grid;
+            grid-template-columns: 110px 1fr 70px;
+            gap: 10px;
+            align-items: center;
+            margin: 9px 0;
+            font-size: 13px
+        }
+
+        .bar i {
+            display: block;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--chili), var(--turmeric));
+            transition: width .6s
+        }
+
+        .tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            align-items: end
+        }
+
+        label {
+            display: grid;
+            gap: 4px;
+            color: var(--mut);
+            font-size: 12px
+        }
+
+        input,
+        select,
+        textarea {
+            background: #150f0c;
+            border: 1px solid var(--line);
+            color: var(--txt);
+            padding: 9px 12px;
+            border-radius: 9px;
+            font: inherit
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 260px;
+            font: 13px 'Courier New', monospace
+        }
+
+        .btn {
+            background: var(--turmeric);
+            color: #241a05;
+            border: 0;
+            padding: 10px 18px;
+            border-radius: 9px;
+            font: 700 14px inherit;
+            cursor: pointer
+        }
+
+        .btn.ghost {
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--txt)
+        }
+
+        .btn.red {
+            background: var(--chili);
+            color: #fff
+        }
+
+        .btn.sm {
+            padding: 5px 10px;
+            font-size: 12px
+        }
+
+        .tw {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 14px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px
+        }
+
+        th {
+            text-align: left;
+            color: var(--mut);
+            font-weight: 600;
+            padding: 11px 14px;
+            background: #1c1511;
+            white-space: nowrap
+        }
+
+        td {
+            padding: 10px 14px;
+            border-top: 1px solid var(--line);
+            vertical-align: top;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px
+        }
+
+        .dish {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px
+        }
+
+        .dish h4 {
+            margin: 0 0 4px;
+            font: 700 18px 'Bricolage Grotesque'
+        }
+
+        .dish p {
+            color: var(--mut);
+            margin: 6px 0;
+            font-size: 13px
+        }
+
+        .dot {
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            border: 2px solid;
+            border-radius: 3px;
+            margin-right: 6px;
+            position: relative;
+            top: 1px
+        }
+
+        .dot.v {
+            color: var(--leaf)
+        }
+
+        .dot.n {
+            color: var(--chili)
+        }
+
+        .chip {
+            display: inline-block;
+            background: #33261d;
+            border-radius: 99px;
+            padding: 1px 9px;
+            font-size: 11px;
+            margin: 2px 3px 0 0;
+            color: var(--turmeric)
+        }
+
+        .price {
+            float: right;
+            font: 800 18px 'Bricolage Grotesque';
+            color: var(--turmeric)
+        }
+
+        dialog {
+            background: var(--card);
+            color: var(--txt);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            width: min(620px, 92vw);
+            padding: 22px
+        }
+
+        dialog::backdrop {
+            background: #000a
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--leaf);
+            color: #0d1f15;
+            padding: 11px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: .25s;
+            z-index: 9
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: none
+        }
+
+        #toast.err {
+            background: var(--chili);
+            color: #fff
+        }
+
+        code {
+            background: #150f0c;
+            padding: 2px 6px;
+            border-radius: 5px;
+            color: var(--turmeric);
+            font-size: 12px
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            * {
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div>
+            <h1>Masala <span>Ledger</span></h1>
+            <p>Orders, kitchen and customers for the restaurant floor.</p>
+        </div>
+        <div id="clock" style="color:var(--mut)"></div>
+    </header>
+    <nav id="nav"></nav>
+    <main>
+        <section id="dash">
+            <div class="stats" id="stats"></div>
+            <div class="panel" style="margin-bottom:20px">
+                <h3>Kitchen rail: latest orders</h3>
+                <div class="rail" id="rail"></div>
+            </div>
+            <div class="grid">
+                <div class="panel">
+                    <h3>Top dishes by revenue</h3>
+                    <div id="topItems"></div>
+                </div>
+                <div class="panel">
+                    <h3>Revenue by day</h3>
+                    <div id="daily"></div>
+                </div>
+            </div>
+        </section>
+        <section id="menu">
+            <div class="tools">
+                <label>Search dishes<input id="mText" placeholder="biryani, paneer, spicy…"></label>
+                <label>Diet<select id="mVeg">
+                        <option value="">All</option>
+                        <option value="true">Vegetarian</option>
+                        <option value="false">Non-vegetarian</option>
+                    </select></label>
+                <label>Min price<input id="mMin" type="number" style="width:100px"></label><label>Max price<input
+                        id="mMax" type="number" style="width:100px"></label>
+                <label>Show up to<input id="mLim" type="number" value="12" style="width:90px"></label><button
+                    class="btn" onclick="searchMenu()">Search menu</button>
+            </div>
+            <div class="cards" id="menuOut"></div>
+        </section>
+        <section id="orders">
+            <div class="tools">
+                <label>Status<select id="oStatus">
+                        <option value="">Any</option>
+                        <option>placed</option>
+                        <option>preparing</option>
+                        <option>served</option>
+                        <option>paid</option>
+                        <option>cancelled</option>
+                    </select></label>
+                <label>Order type<select id="oType">
+                        <option value="">Any</option>
+                        <option>dine-in</option>
+                        <option>takeaway</option>
+                        <option>delivery</option>
+                    </select></label>
+                <label>Total above<input id="oMin" type="number" style="width:110px"></label><label>Total below<input
+                        id="oMax" type="number" style="width:110px"></label>
+                <label>Logic<select id="oLogic">
+                        <option value="$and">AND (all match)</option>
+                        <option value="$or">OR (any match)</option>
+                    </select></label>
+                <label>Sort<select id="oSort">
+                        <option value="-createdAt">Newest</option>
+                        <option value="-total">Highest total</option>
+                        <option value="total">Lowest total</option>
+                    </select></label>
+                <label>Limit<input id="oLim" type="number" value="10" style="width:80px"></label>
+                <label>Columns<input id="oFields" value="customerId,type,status,total"
+                        style="width:210px"></label><button class="btn" onclick="filterOrders()">Apply filters</button>
+            </div>
+            <div class="tw">
+                <table id="oTable"></table>
+            </div>
+        </section>
+        <section id="data">
+            <div class="tools"><label>Collection<select id="colSel" onchange="loadCol()"></select></label><button
+                    class="btn" onclick="edit()">Add document</button><span style="color:var(--mut)">Tip: refresh
+                    <b>MongoDB Compass</b> to see changes instantly.</span></div>
+            <div class="tw">
+                <table id="cTable"></table>
+            </div>
+        </section>
+        <section id="reports">
+            <div class="grid">
+                <div class="panel">
+                    <h3>Orders by status</h3>
+                    <table id="rStatus"></table>
+                </div>
+                <div class="panel">
+                    <h3>Best customers</h3>
+                    <table id="rCust"></table>
+                </div>
+                <div class="panel">
+                    <h3>Daily revenue report</h3>
+                    <table id="rDay"></table>
+                </div>
+                <div class="panel">
+                    <h3>Top dishes</h3>
+                    <table id="rTop"></table>
+                </div>
+            </div>
+        </section>
+    </main>
+    <dialog id="dlg">
+        <h3 id="dTitle" style="margin-bottom:12px"></h3><textarea id="dText" spellcheck="false"></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px"><button class="btn ghost"
+                onclick="dlg.close()">Cancel</button><button class="btn" onclick="save()">Save document</button></div>
+    </dialog>
+    <div id="toast"></div>
+    <script>
+        const $ = id => document.getElementById(id), inr = n => '₹' + Math.round(n || 0).toLocaleString('en-IN');
+        const api = async (u, o) => { const r = await fetch('/api/' + u, o && { ...o, headers: { 'Content-Type': 'application/json' } }); const j = await r.json(); if (!r.ok) throw new Error(j.error); return j };
+        const toast = (m, e) => { const t = $('toast'); t.textContent = m; t.className = 'show' + (e ? ' err' : ''); setTimeout(() => t.className = '', 2200) };
+        const COLS = ['categories', 'menu_items', 'customers', 'tables', 'staff', 'orders', 'order_items', 'payments', 'reservations', 'reviews', 'inventory', 'suppliers', 'coupons', 'deliveries', 'shifts', 'kitchen_tickets'];
+        const TABS = [['dash', 'Dashboard'], ['menu', 'Menu search'], ['orders', 'Order filters'], ['data', 'Manage data'], ['reports', 'Reports']];
+        $('nav').innerHTML = TABS.map(([k, l]) => `<button data-k="${k}">${l}</button>`).join('');
+        $('nav').onclick = e => { const k = e.target.dataset.k; if (!k) return; document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === k)); document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); ({ dash, menu: searchMenu, orders: filterOrders, data: loadCol, reports })[k]() };
+        $('colSel').innerHTML = COLS.map(c => `<option>${c}</option>`).join('');
+        setInterval(() => $('clock').textContent = new Date().toLocaleString('en-IN', { weekday: 'long', hour: '2-digit', minute: '2-digit' }), 1000);
+        const cell = v => v == null ? '' : typeof v === 'object' ? (Array.isArray(v) ? v.map(x => typeof x === 'object' ? x.name || JSON.stringify(x) : x).join(', ') : JSON.stringify(v)) : String(v).replace(/^(\d{4}-\d\d-\d\d)T.*/, '$1');
+        const table = (el, rows, extra) => {
+            if (!rows.length) { el.innerHTML = '<tr><td>Nothing matches yet. Adjust the filters and try again.</td></tr>'; return }
+            const keys = [...new Set(rows.flatMap(Object.keys))]; el.innerHTML = '<tr>' + keys.map(k => `<th>${k}</th>`).join('') + (extra ? '<th></th>' : '') + '</tr>' + rows.map(r => '<tr>' + keys.map(k => `<td title="${cell(r[k]).replace(/"/g, '&quot;')}">${cell(r[k])}</td>`).join('') + (extra ? `<td>${extra(r)}</td>` : '') + '</tr>').join('')
+        };
+        const bars = (el, rows, lab, val) => { const m = Math.max(...rows.map(r => r[val]), 1); el.innerHTML = rows.map(r => `<div class="bar"><span>${r[lab]}</span><i style="width:${r[val] / m * 100}%"></i><b>${inr(r[val])}</b></div>`).join('') };
+        async function dash() {
+            const [o, cu, t, top, day] = await Promise.all([api('orders?sort=-createdAt&limit=200'), api('customers'), api('tables'), api('reports/top-items'), api('reports/daily-revenue')]);
+            const paid = o.filter(x => x.status === 'paid');
+            $('stats').innerHTML = [['Orders', o.length], ['Revenue', inr(paid.reduce((s, x) => s + x.total, 0))], ['Customers', cu.length], ['Tables in use', t.filter(x => x.status === 'occupied').length + '/' + t.length], ['Open tickets', o.filter(x => ['placed', 'preparing'].includes(x.status)).length]].map(([l, v]) => `<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
+            $('rail').innerHTML = o.slice(0, 12).map(x => `<div class="ticket"><b>#${x._id}</b><span class="tag">${x.status}</span><div>Table ${x.tableId} · ${x.type}</div><hr>${x.items.map(i => `${i.qty}× ${i.name}`).join('<br>')}<hr><b>${inr(x.total)}</b></div>`).join('');
+            bars($('topItems'), top.map(x => ({ l: x.item, v: x.revenue })), 'l', 'v'); bars($('daily'), day.map(x => ({ l: x.day.slice(5), v: x.revenue })), 'l', 'v')
+        }
+        async function searchMenu() {
+            const p = new URLSearchParams({ limit: $('mLim').value });[['text', 'mText'], ['veg', 'mVeg'], ['minPrice', 'mMin'], ['maxPrice', 'mMax']].forEach(([k, i]) => $(i).value && p.set(k, $(i).value));
+            const r = await api('search/menu?' + p); $('menuOut').innerHTML = r.length ? r.map(d => `<div class="dish"><span class="price">${inr(d.price)}</span><h4><span class="dot ${d.veg ? 'v' : 'n'}"></span>${d.name}</h4><p>${d.description}</p>${(d.tags || []).map(t => `<span class="chip">${t}</span>`).join('')}</div>`).join('') : '<p>No dishes found. Try a shorter search word.</p>'
+        }
+        async function filterOrders() {
+            const c = []; if ($('oStatus').value) c.push({ status: $('oStatus').value }); if ($('oType').value) c.push({ type: $('oType').value });
+            if ($('oMin').value) c.push({ total: { $gt: +$('oMin').value } }); if ($('oMax').value) c.push({ total: { $lt: +$('oMax').value } });
+            const f = c.length ? { [$('oLogic').value]: c } : {}; const p = new URLSearchParams({ filter: JSON.stringify(f), fields: $('oFields').value, sort: $('oSort').value, limit: $('oLim').value });
+            table($('oTable'), await api('orders?' + p))
+        }
+        let cur = null;
+        async function loadCol() { const c = $('colSel').value; table($('cTable'), await api(c + '?limit=100'), r => `<button class="btn ghost sm" onclick='edit(${JSON.stringify(r._id)})'>Edit</button> <button class="btn red sm" onclick='del(${JSON.stringify(r._id)})'>Delete</button>`) }
+        async function edit(id) {
+            const c = $('colSel').value; cur = id ?? null; let d = {}; if (id != null) { d = (await api(c + '?filter=' + encodeURIComponent(JSON.stringify({ _id: id }))))[0] } else { const s = await api(c + '?limit=1'); d = Object.fromEntries(Object.keys(s[0] || { name: '' }).filter(k => k !== '_id').map(k => [k, ''])) }
+            $('dTitle').textContent = (id != null ? 'Edit ' : 'Add to ') + c; $('dText').value = JSON.stringify(d, null, 2); dlg.showModal()
+        }
+        async function save() { const c = $('colSel').value; try { const b = JSON.parse($('dText').value); cur != null ? await api(`${c}/${cur}`, { method: 'PUT', body: JSON.stringify(b) }) : await api(c, { method: 'POST', body: JSON.stringify(b) }); dlg.close(); toast(cur != null ? 'Document updated' : 'Document added'); loadCol() } catch (e) { toast(e.message, 1) } }
+        async function del(id) { if (!confirm('Delete this document?')) return; await api(`${$('colSel').value}/${id}`, { method: 'DELETE' }); toast('Document deleted'); loadCol() }
+        async function reports() { const [a, b, c, d] = await Promise.all([api('reports/status-counts'), api('reports/customer-spend'), api('reports/daily-revenue'), api('reports/top-items')]); table($('rStatus'), a); table($('rCust'), b); table($('rDay'), c); table($('rTop'), d) }
+        document.querySelector('nav button').click();
+    </script>
+</body>
+
+</html>
